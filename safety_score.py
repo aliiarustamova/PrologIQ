@@ -79,9 +79,9 @@ class SafetyScoreCalculator:
         for doc in facilities:
             data = doc.to_dict()
             
-            # Calculate total CCTV cameras
-            cctv_total = sum([data.get(f'CCTV{i}', 0) for i in range(1, 6)])
-            stats['max_cctv'] = max(stats['max_cctv'], cctv_total)
+            # Count active CCTV cameras
+            active_cctv = sum(1 for i in range(1, 6) if data.get(f'CCTV{i}', '') == 'Active')
+            stats['max_cctv'] = max(stats['max_cctv'], active_cctv)
             
             # Security employees
             stats['max_security_employees'] = max(
@@ -135,12 +135,30 @@ class SafetyScoreCalculator:
         rank = self.CITY_SAFETY_RANKS.get(city, 50)
         return rank / 100.0
     
+    def _count_active_cctv(self, facility_data: Dict) -> int:
+        """Count active CCTV cameras."""
+        count = 0
+        for i in range(1, 6):
+            cctv_status = facility_data.get(f'CCTV{i}', '')
+            if cctv_status == 'Active':
+                count += 1
+        return count
+    
+    def _normalize_automation_level(self, automation_str: str) -> float:
+        """Convert automation level string to normalized score (0-1)."""
+        automation_map = {
+            'Low': 0.33,
+            'Medium': 0.66,
+            'High': 1.0
+        }
+        return automation_map.get(automation_str, 0.5)
+    
     def calculate_facility_score(self, facility_data: Dict, stats: Dict) -> float:
         """Calculate safety score for a single facility."""
         
-        # CCTV Coverage (0.25)
-        total_cctv = sum([facility_data.get(f'CCTV{i}', 0) for i in range(1, 6)])
-        cctv_score = min(total_cctv / stats['max_cctv'], 1.0)
+        # CCTV Coverage (0.25) - count active cameras
+        active_cctv = self._count_active_cctv(facility_data)
+        cctv_score = min(active_cctv / stats['max_cctv'], 1.0)
         
         # Security Employees (0.20)
         security_score = min(
@@ -158,8 +176,9 @@ class SafetyScoreCalculator:
         # Efficiency Score (0.15)
         efficiency_score = min(facility_data.get('efficiency_score', 0) / 100, 1.0)
         
-        # Automation Level (0.10)
-        automation_score = min(facility_data.get('automation_level', 0), 1.0)
+        # Automation Level (0.10) - normalize string values
+        automation_str = facility_data.get('automation_level', 'Low')
+        automation_score = self._normalize_automation_level(automation_str)
         
         # Status (0.10)
         status = facility_data.get('status', 'Operational')
