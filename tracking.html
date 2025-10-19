@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PrologIQ | Tracking</title>
+    <link rel="stylesheet" href="dist/output.css" />
+  </head>
+
+  <body class="bg-gradient-to-b from-[#0B1015] to-[#101A23] text-white min-h-screen font-sans">
+    <!-- Navbar -->
+    <header class="flex justify-between items-center p-6 border-b border-cyan-700/40">
+      <h1 class="text-2xl font-bold text-cyan-400">PrologIQ</h1>
+      <nav class="space-x-6 text-gray-300">
+        <a href="index.html" class="hover:text-cyan-400 transition">Home</a>
+        <a href="security.html" class="hover:text-cyan-400 transition">Security</a>
+        <a href="tracking.html" class="text-cyan-400 font-semibold">Tracking</a>
+      </nav>
+    </header>
+
+    <!-- Main -->
+    <main class="p-6">
+      <h2 class="text-3xl font-bold mb-6 text-cyan-400">Trailer Tracking History</h2>
+
+      <!-- Trailer info -->
+      <section class="bg-[#0F172A]/60 border border-cyan-800/30 rounded-xl p-6 mb-8 shadow-lg">
+        <h3 class="text-xl font-semibold mb-3">Trailer Details</h3>
+        <div id="trailerInfo" class="text-gray-300">
+          <!-- Populated dynamically -->
+          Loading trailer info...
+        </div>
+      </section>
+
+      <!-- Movement timeline -->
+      <section class="bg-[#0F172A]/60 border border-cyan-800/30 rounded-xl p-6 shadow-lg">
+        <h3 class="text-xl font-semibold mb-3">Movement Log</h3>
+        <ul id="movementList" class="space-y-3 text-gray-300">
+          <!-- Movement entries appear here -->
+        </ul>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center py-6 text-gray-500 border-t border-cyan-800/30">
+      © 2025 PrologIQ — Chain of Custody Tracking
+    </footer>
+
+    <!-- JS logic -->
+    <script>
+      // Extract trailer ID from URL, e.g., tracking.html?id=TRL-102
+      const params = new URLSearchParams(window.location.search);
+      const trailerId = params.get("id") || "TRL-102";
+
+      // Fetch trailer info
+      fetch(`http://localhost:5000/api/trailers?id=${trailerId}`)
+        .then(res => res.json())
+        .then(data => {
+          const infoDiv = document.getElementById("trailerInfo");
+          if (data && data.length > 0) {
+            const trailer = data[0];
+            infoDiv.innerHTML = `
+              <p><strong>ID:</strong> ${trailer.trailer_id}</p>
+              <p><strong>Status:</strong> ${trailer.status}</p>
+              <p><strong>Last known location:</strong> ${trailer.current_location}</p>
+              <p><strong>Last update:</strong> ${new Date(trailer.last_update).toLocaleString()}</p>
+            `;
+          } else {
+            infoDiv.textContent = "No trailer data found.";
+          }
+        })
+        .catch(() => {
+          document.getElementById("trailerInfo").textContent = "Error loading trailer info.";
+        });
+
+      // Fetch trailer movements
+      fetch(`http://localhost:5000/api/movements?trailer_id=${trailerId}`)
+        .then(res => res.json())
+        .then(data => {
+          const list = document.getElementById("movementList");
+          if (data && data.length > 0) {
+            data.forEach(m => {
+              const li = document.createElement("li");
+              li.className = "border border-cyan-800/50 rounded-lg p-3 hover:border-cyan-400 transition";
+              li.innerHTML = `
+                <p class="text-cyan-400 font-semibold">${new Date(m.timestamp).toLocaleString()}</p>
+                <p>${m.event} — <span class="text-gray-400">${m.location}</span></p>
+                ${m.note ? `<p class="text-gray-500 text-sm italic">${m.note}</p>` : ""}
+              `;
+              list.appendChild(li);
+            });
+          } else {
+            list.innerHTML = "<p class='text-gray-400'>No movement data found.</p>";
+          }
+        })
+        .catch(() => {
+          document.getElementById("movementList").innerHTML = "<p class='text-gray-400'>Error loading movement log.</p>";
+        });
+    </script>
+  </body>
+</html>

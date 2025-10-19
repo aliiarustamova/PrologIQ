@@ -1,38 +1,109 @@
-<!-- <link rel="stylesheet" href="dist/output.css" />
-<body class="bg-gradient-to-b from-[#0B1015] to-[#101A23] text-white min-h-screen flex flex-col items-center justify-center"> -->
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PrologIQ | Home</title>
+
+    <!-- Tailwind build -->
     <link rel="stylesheet" href="dist/output.css" />
+
+    <!-- Leaflet (Map Library) -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
+    />
+    <script
+      src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"
+      defer
+    ></script>
   </head>
 
-  <body class="bg-gradient-to-b from-[#0B1015] to-[#101A23] text-white min-h-screen font-sans flex flex-col items-center">
+  <body
+    class="bg-gradient-to-b from-[#0B1015] to-[#101A23] text-white min-h-screen font-sans flex flex-col items-center"
+  >
     <!-- Header -->
-    <header class="w-full flex justify-between items-center px-8 py-4 border-b border-cyan-400/30">
+    <header
+      class="w-full flex justify-between items-center px-8 py-4 border-b border-cyan-400/30"
+    >
       <h1 class="text-2xl font-bold text-cyan-400">PrologIQ Hub</h1>
-      <a href="index.html"
-         class="border border-cyan-400 rounded-full px-4 py-2 text-sm hover:bg-cyan-500/20 transition">
+      <a
+        href="index.html"
+        class="border border-cyan-400 rounded-full px-4 py-2 text-sm hover:bg-cyan-500/20 transition"
+      >
         ⬅ Back to Dashboard
       </a>
     </header>
 
     <!-- Main -->
-    <main class="flex flex-col items-center justify-center flex-grow space-y-6">
-      <h2 class="text-xl font-semibold mb-4">Global Facilities Overview</h2>
+    <main
+      class="flex flex-col items-center justify-center flex-grow space-y-6 py-10"
+    >
+      <h2 class="text-xl font-semibold mb-4 text-cyan-400">
+        Global Facilities Overview
+      </h2>
 
-      <!-- World Map Placeholder -->
-      <div class="w-[90%] max-w-4xl h-[450px] bg-[#0D1117] rounded-xl border border-cyan-400/20
-                  flex items-center justify-center text-gray-400 italic">
-        🌍 Interactive World Map Coming Soon...
-      </div>
+      <!-- Map -->
+      <div
+        id="map"
+        class="w-[90%] max-w-4xl h-[450px] bg-[#0D1117] rounded-xl border border-cyan-400/20 overflow-hidden"
+      ></div>
 
-      <!-- Optional: Facility list placeholder -->
       <div class="mt-6 text-gray-400">
         <p>Facilities will appear here once data is connected.</p>
       </div>
     </main>
+
+    <!-- Footer -->
+    <footer
+      class="text-center py-6 text-gray-500 border-t border-cyan-400/30 w-full"
+    >
+      © 2025 PrologIQ — Real-Time Freight Tracking
+    </footer>
+
+    <!-- JS logic -->
+    <script>
+      window.addEventListener("load", () => {
+        // Initialize map centered on the United States
+        const map = L.map("map").setView([37.0902, -95.7129], 4);
+
+        // Add base tiles
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          maxZoom: 19,
+          attribution: "© OpenStreetMap contributors",
+        }).addTo(map);
+
+        // Example facility markers (static for now — will connect to DB later)
+        const facilities = [
+          {
+            name: "Prologis Oakland",
+            coords: [37.8048, -122.2711],
+            status: "Active",
+          },
+          {
+            name: "Prologis Dallas",
+            coords: [32.7767, -96.797],
+            status: "Active",
+          },
+          {
+            name: "Prologis Chicago",
+            coords: [41.8781, -87.6298],
+            status: "Maintenance",
+          },
+        ];
+
+        facilities.forEach((site) => {
+          const marker = L.marker(site.coords)
+            .addTo(map)
+            .bindPopup(
+              `<b>${site.name}</b><br>Status: <span class="text-cyan-400">${site.status}</span>`
+            );
+        });
+
+        // Fit view to all markers
+        const bounds = L.latLngBounds(facilities.map((f) => f.coords));
+        map.fitBounds(bounds, { padding: [50, 50] });
+      });
+    </script>
   </body>
 </html>

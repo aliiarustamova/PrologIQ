@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PrologIQ | Driver Check-In</title>
+    <link rel="stylesheet" href="dist/output.css" />
+  </head>
+
+  <body
+    class="bg-gradient-to-b from-[#0B1015] to-[#101A23] text-white flex items-center justify-center min-h-screen font-sans"
+  >
+    <!-- Container -->
+    <div
+      class="bg-[#0F172A]/70 border border-cyan-400/30 rounded-2xl shadow-xl p-8 w-[90%] max-w-md"
+    >
+      <h1 class="text-3xl font-bold text-cyan-400 mb-6 text-center">
+        Driver Check-In
+      </h1>
+
+      <!-- Form -->
+      <form id="driverForm" class="flex flex-col space-y-4">
+        <input
+          type="text"
+          id="driverName"
+          placeholder="Driver Name"
+          class="p-3 rounded-lg bg-[#0B1015] border border-cyan-400/30 focus:border-cyan-400 outline-none"
+          required
+        />
+
+        <input
+          type="text"
+          id="truckNumber"
+          placeholder="Truck Number (e.g. TX-301)"
+          class="p-3 rounded-lg bg-[#0B1015] border border-cyan-400/30 focus:border-cyan-400 outline-none"
+          required
+        />
+
+        <select
+          id="parkingLot"
+          class="p-3 rounded-lg bg-[#0B1015] border border-cyan-400/30 focus:border-cyan-400 outline-none"
+        >
+          <option value="">Select Parking Lot</option>
+          <option value="Lot-A1">Lot-A1</option>
+          <option value="Lot-A2">Lot-A2</option>
+          <option value="Lot-B1">Lot-B1</option>
+          <option value="Lot-B2">Lot-B2</option>
+        </select>
+
+        <textarea
+          id="notes"
+          placeholder="Notes (optional)"
+          rows="3"
+          class="p-3 rounded-lg bg-[#0B1015] border border-cyan-400/30 focus:border-cyan-400 outline-none"
+        ></textarea>
+
+        <button
+          class="bg-cyan-500/20 border border-cyan-400 hover:bg-cyan-500/40 rounded-lg py-3 font-semibold transition"
+        >
+          Submit
+        </button>
+      </form>
+
+      <p
+        id="statusMsg"
+        class="text-center text-gray-400 text-sm mt-4 italic"
+      ></p>
+
+      <p class="text-xs text-center text-gray-500 mt-6">
+        Trailer ID:
+        <span id="trailerIdText" class="text-cyan-400 font-mono"></span>
+      </p>
+    </div>
+
+    <!-- JS -->
+    <script>
+      // Get trailer ID from QR code URL (e.g., ?id=TRL-102)
+      const params = new URLSearchParams(window.location.search);
+      const trailerId = params.get("id") || "Unknown";
+      document.getElementById("trailerIdText").textContent = trailerId;
+
+      const form = document.getElementById("driverForm");
+      const statusMsg = document.getElementById("statusMsg");
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const data = {
+          trailer_id: trailerId,
+          driver_name: document.getElementById("driverName").value,
+          truck_number: document.getElementById("truckNumber").value,
+          parking_lot: document.getElementById("parkingLot").value,
+          notes: document.getElementById("notes").value,
+        };
+
+        // 🔹 For now (until backend ready), just log and show success
+        console.log("Would submit:", JSON.stringify(data));
+
+        // When backend is ready, uncomment this:
+        /*
+        const res = await fetch("http://localhost:5000/api/driver-log", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+        const msg = await res.json();
+        statusMsg.textContent = msg.message;
+        */
+
+        // Temporary success message (mock)
+        statusMsg.textContent =
+          "✅ Data captured successfully (mock mode). Will sync once backend ready!";
+        form.reset();
+      });
+    </script>
+  </body>
+</html>
